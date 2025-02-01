@@ -46,7 +46,7 @@ document.getElementById("generateBtn").addEventListener("click", function() {
         return;
     }
 
-    fetch("http://localhost:5000/generate", {
+    fetch("https://bopt.onrender.com", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ batch_size: batchSize })
