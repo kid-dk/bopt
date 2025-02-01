@@ -3,14 +3,26 @@ body {
     margin: 20px;
 }
 
-table {
-    border-collapse: collapse;
-    margin: 10px 0;
-    width: 100%;
+#input-section input {
+    margin: 5px;
 }
 
-th, td {
-    border: 1px solid black;
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
     padding: 8px;
     text-align: center;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+button {
+    margin-top: 10px;
 }

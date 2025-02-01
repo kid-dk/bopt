@@ -1,86 +1,108 @@
-document.getElementById("createTableBtn").addEventListener("click", function() {
-    const numPoints = parseInt(document.getElementById("numPoints").value);
-    if (isNaN(numPoints) || numPoints <= 0) {
-        alert("Enter a valid number.");
+function createDataTable() {
+    const numPoints = document.getElementById('initial-data-points').value;
+    if (numPoints <= 0) {
+        alert('Please enter a valid number of initial data points.');
         return;
     }
-    createDataTable(numPoints);
-});
 
-function createDataTable(numPoints) {
-    const container = document.getElementById("dataTableContainer");
-    container.innerHTML = "";
+    const tableSection = document.getElementById('data-table-section');
+    tableSection.innerHTML = '';
 
-    const table = document.createElement("table");
-    const thead = document.createElement("thead");
-    const headerRow = document.createElement("tr");
-    ["PEG (g)", "NaCl (mg)", "Glycerol (ml)"].forEach(headerText => {
-        const th = document.createElement("th");
-        th.innerText = headerText;
+    const table = document.createElement('table');
+    const headerRow = document.createElement('tr');
+    const headers = ["PEG (g)", "NaCl (mg)", "Glycerol (ml)", "ESD", "RF"];
+    headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
         headerRow.appendChild(th);
     });
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
+    table.appendChild(headerRow);
 
-    const tbody = document.createElement("tbody");
     for (let i = 0; i < numPoints; i++) {
-        const row = document.createElement("tr");
-        for (let j = 0; j < 3; j++) {
-            const cell = document.createElement("td");
-            const input = document.createElement("input");
-            input.type = "number";
-            input.style.width = "80px";
-            cell.appendChild(input);
-            row.appendChild(cell);
-        }
-        tbody.appendChild(row);
+        const tr = document.createElement('tr');
+        headers.forEach((header, j) => {
+            const td = document.createElement('td');
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.id = `data-${i}-${j}`;
+            input.placeholder = header;
+            td.appendChild(input);
+            tr.appendChild(td);
+        });
+        table.appendChild(tr);
     }
-    table.appendChild(tbody);
-    container.appendChild(table);
+
+    tableSection.appendChild(table);
+    document.getElementById('calculate-btn').style.display = 'block';
 }
 
-document.getElementById("generateBtn").addEventListener("click", function() {
-    const batchSize = parseInt(document.getElementById("batchSize").value);
-    if (isNaN(batchSize) || batchSize <= 0) {
-        alert("Enter a valid batch size.");
-        return;
+async function calculate() {
+    const numPoints = document.getElementById('initial-data-points').value;
+    const batchSize = document.getElementById('batch-size').value;
+    const initialData = [];
+
+    for (let i = 0; i < numPoints; i++) {
+        const row = [];
+        for (let j = 0; j < 5; j++) {
+            const value = parseFloat(document.getElementById(`data-${i}-${j}`).value);
+            if (isNaN(value)) {
+                alert(`Please enter a valid number for row ${i + 1}, column ${j + 1}.`);
+                return;
+            }
+            row.push(value);
+        }
+        initialData.push(row);
     }
 
-    fetch("https://bopt.onrender.com", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ batch_size: batchSize })
-    })
-    .then(response => response.json())
-    .then(data => displayOutputTable(data))
-    .catch(error => console.error("Error:", error));
-});
+    try {
+        const response = await fetch('http://127.0.0.1:5000/calculate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                initial_data: initialData,
+                batch_size: parseInt(batchSize),
+            }),
+        });
 
-function displayOutputTable(candidates) {
-    const container = document.getElementById("outputTableContainer");
-    container.innerHTML = "";
-    const table = document.createElement("table");
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
-    const thead = document.createElement("thead");
-    const headerRow = document.createElement("tr");
-    ["PEG (g)", "NaCl (mg)", "Glycerol (ml)"].forEach(headerText => {
-        const th = document.createElement("th");
-        th.innerText = headerText;
+        const data = await response.json();
+
+        if (data.status === 'error') {
+            throw new Error(data.message);
+        }
+
+        displayResult(data.result);
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred: ' + error.message);
+    }
+}
+
+function displayResult(result) {
+    const resultTable = document.getElementById('result-table');
+    resultTable.innerHTML = '';
+
+    const headerRow = document.createElement('tr');
+    const headers = ["PEG (g)", "NaCl (mg)", "Glycerol (ml)"];
+    headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
         headerRow.appendChild(th);
     });
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
+    resultTable.appendChild(headerRow);
 
-    const tbody = document.createElement("tbody");
-    candidates.forEach(candidate => {
-        const row = document.createElement("tr");
-        Object.values(candidate).forEach(value => {
-            const cell = document.createElement("td");
-            cell.innerText = value.toFixed(4);
-            row.appendChild(cell);
+    result.forEach(row => {
+        const tr = document.createElement('tr');
+        headers.forEach(header => {
+            const td = document.createElement('td');
+            td.textContent = row[header].toFixed(2);
+            tr.appendChild(td);
         });
-        tbody.appendChild(row);
+        resultTable.appendChild(tr);
     });
-    table.appendChild(tbody);
-    container.appendChild(table);
 }
