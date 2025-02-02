@@ -6,6 +6,13 @@ const initialData = [
     [0.0, 75.0, 0.0, 352.021355, 0.660667]
 ];
 
+// Store response times for average calculation
+let responseTimes = [];
+
+// Timer variables
+let startTime;
+let timerInterval;
+
 // Load saved data from localStorage
 function loadSavedData() {
     const savedData = localStorage.getItem('gprData');
@@ -64,6 +71,32 @@ function createDataTable() {
     document.getElementById('calculate-btn').style.display = 'block';
 }
 
+// Start the timer
+function startTimer() {
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 100);
+}
+
+// Stop the timer and calculate elapsed time
+function stopTimer() {
+    clearInterval(timerInterval);
+    const elapsedTime = (Date.now() - startTime) / 1000;
+    responseTimes.push(elapsedTime);
+    updateAverageTime();
+}
+
+// Update the timer display
+function updateTimer() {
+    const elapsedTime = (Date.now() - startTime) / 1000;
+    document.getElementById('elapsed-time').textContent = elapsedTime.toFixed(2);
+}
+
+// Calculate and update the average response time
+function updateAverageTime() {
+    const averageTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
+    document.getElementById('average-time').textContent = averageTime.toFixed(2);
+}
+
 // Calculate function
 async function calculate() {
     const numPoints = document.getElementById('initial-data-points').value;
@@ -83,11 +116,15 @@ async function calculate() {
         initialData.push(row);
     }
 
-    // Show loading indicator
+    // Save the data to localStorage
+    saveData(initialData);
+
+    // Show loading animation and start timer
     const loadingDiv = document.getElementById('loading');
     const calculateBtn = document.getElementById('calculate-btn');
     loadingDiv.style.display = 'block';
     calculateBtn.disabled = true;
+    startTimer();
 
     try {
         const response = await fetch('https://bopt.onrender.com/calculate', {
@@ -116,9 +153,10 @@ async function calculate() {
         console.error('Error:', error);
         alert('An error occurred: ' + error.message);
     } finally {
-        // Hide loading indicator
+        // Hide loading animation and stop timer
         loadingDiv.style.display = 'none';
         calculateBtn.disabled = false;
+        stopTimer();
     }
 }
 
