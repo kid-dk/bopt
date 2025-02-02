@@ -6,9 +6,6 @@ const initialData = [
     [0.0, 75.0, 0.0, 352.021355, 0.660667]
 ];
 
-// Store response times for average calculation
-let responseTimes = [];
-
 // Timer variables
 let startTime;
 let timerInterval;
@@ -81,20 +78,13 @@ function startTimer() {
 function stopTimer() {
     clearInterval(timerInterval);
     const elapsedTime = (Date.now() - startTime) / 1000;
-    responseTimes.push(elapsedTime);
-    updateAverageTime();
+    document.getElementById('elapsed-time').textContent = elapsedTime.toFixed(2);
 }
 
 // Update the timer display
 function updateTimer() {
     const elapsedTime = (Date.now() - startTime) / 1000;
     document.getElementById('elapsed-time').textContent = elapsedTime.toFixed(2);
-}
-
-// Calculate and update the average response time
-function updateAverageTime() {
-    const averageTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
-    document.getElementById('average-time').textContent = averageTime.toFixed(2);
 }
 
 // Calculate function
@@ -149,6 +139,7 @@ async function calculate() {
         }
 
         displayResult(data.result);
+        document.getElementById('average-time').textContent = data.avg_response_time.toFixed(2);
     } catch (error) {
         console.error('Error:', error);
         alert('An error occurred: ' + error.message);

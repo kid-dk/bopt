@@ -3,10 +3,34 @@ from flask_cors import CORS
 import pandas as pd
 import torch
 import os
+import sqlite3
+import time
 
 app = Flask(__name__)
 # Enable CORS for all routes
 CORS(app, origins=["https://kid-dk.github.io"])  # Allow requests from GitHub Pages
+
+# SQLite database setup
+DATABASE = 'response_times.db'
+
+def get_db():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    with app.app_context():
+        db = get_db()
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS response_times (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                elapsed_time REAL NOT NULL
+            )
+        ''')
+        db.commit()
+
+# Initialize the database
+init_db()
 
 torch.manual_seed(0)
 tkwargs = {
@@ -24,6 +48,10 @@ def calculate():
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
         response.headers.add('Access-Control-Allow-Methods', 'POST')
         return response
+
+    # Start the timer
+    start_time = time.time()
+
     data = request.json
     initial_data = data['initial_data']
     batch_size = data['batch_size']
@@ -98,10 +126,23 @@ def calculate():
     columns = df.columns[:3]
     new_x_df = pd.DataFrame(new_x.cpu().numpy(), columns=columns)
 
+    # Calculate elapsed time
+    elapsed_time = time.time() - start_time
+
+    # Store the elapsed time in the database
+    db = get_db()
+    db.execute('INSERT INTO response_times (elapsed_time) VALUES (?)', (elapsed_time,))
+    db.commit()
+
+    # Calculate the average response time
+    avg_response_time = db.execute('SELECT AVG(elapsed_time) as avg FROM response_times').fetchone()['avg']
+
     # Return the result as JSON
     return jsonify({
         'status': 'success',
-        'result': new_x_df.to_dict(orient='records')
+        'result': new_x_df.to_dict(orient='records'),
+        'elapsed_time': elapsed_time,
+        'avg_response_time': avg_response_time
     })
 
 if __name__ == '__main__':
