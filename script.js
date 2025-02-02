@@ -93,7 +93,7 @@ async function calculate() {
     calculateBtn.disabled = true;
 
     try {
-        const response = await fetch('https://bopt.onrender.com', {
+        const response = await fetch('https://bopt.onrender.com/calculate', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

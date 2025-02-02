@@ -5,7 +5,8 @@ import torch
 import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS
+# Enable CORS for all routes
+CORS(app, origins=["https://kid-dk.github.io"])  # Allow requests from GitHub Pages
 
 torch.manual_seed(0)
 tkwargs = {
