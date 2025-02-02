@@ -145,5 +145,14 @@ def calculate():
         'avg_response_time': avg_response_time
     })
 
+@app.route('/average-response-time', methods=['GET'])
+def get_average_response_time():
+    db = get_db()
+    avg_response_time = db.execute('SELECT AVG(elapsed_time) as avg FROM response_times').fetchone()['avg']
+    return jsonify({
+        'status': 'success',
+        'avg_response_time': avg_response_time if avg_response_time else 0
+    })
+
 if __name__ == '__main__':
     app.run(debug=True)

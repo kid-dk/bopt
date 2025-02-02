@@ -176,8 +176,25 @@ function displayResult(result) {
     });
 }
 
-// Initialize the table with pre-filled data
+// Fetch the average response time when the page loads
+async function fetchAverageResponseTime() {
+    try {
+        const response = await fetch('https://bopt.onrender.com/average-response-time');
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data.status === 'success') {
+            document.getElementById('average-time').textContent = data.avg_response_time.toFixed(2);
+        }
+    } catch (error) {
+        console.error('Error fetching average response time:', error);
+    }
+}
+
+// Initialize the table with pre-filled data and fetch average response time
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('initial-data-points').value = 4;
     createDataTable();
+    fetchAverageResponseTime();  // Fetch average response time on page load
 });
