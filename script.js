@@ -1,3 +1,26 @@
+// Prefill data
+const initialData = [
+    [0.0, 0.0, 0.0, 430.700000, 0.040480],
+    [0.5, 150.0, 0.0, 252.821507, 0.846667],
+    [1.0, 150.0, 1.5, 76.741028, 0.930000],
+    [0.0, 75.0, 0.0, 352.021355, 0.660667]
+];
+
+// Load saved data from localStorage
+function loadSavedData() {
+    const savedData = localStorage.getItem('gprData');
+    if (savedData) {
+        return JSON.parse(savedData);
+    }
+    return initialData;
+}
+
+// Save data to localStorage
+function saveData(data) {
+    localStorage.setItem('gprData', JSON.stringify(data));
+}
+
+// Create the data table
 function createDataTable() {
     const numPoints = document.getElementById('initial-data-points').value;
     if (numPoints <= 0) {
@@ -18,6 +41,8 @@ function createDataTable() {
     });
     table.appendChild(headerRow);
 
+    const savedData = loadSavedData();
+
     for (let i = 0; i < numPoints; i++) {
         const tr = document.createElement('tr');
         headers.forEach((header, j) => {
@@ -26,6 +51,9 @@ function createDataTable() {
             input.type = 'number';
             input.id = `data-${i}-${j}`;
             input.placeholder = header;
+            if (savedData[i]) {
+                input.value = savedData[i][j]; // Prefill with saved data
+            }
             td.appendChild(input);
             tr.appendChild(td);
         });
@@ -36,6 +64,7 @@ function createDataTable() {
     document.getElementById('calculate-btn').style.display = 'block';
 }
 
+// Calculate function
 async function calculate() {
     const numPoints = document.getElementById('initial-data-points').value;
     const batchSize = document.getElementById('batch-size').value;
@@ -53,6 +82,15 @@ async function calculate() {
         }
         initialData.push(row);
     }
+
+    // Save the data to localStorage
+    saveData(initialData);
+
+    // Show loading indicator
+    const loadingDiv = document.getElementById('loading');
+    const calculateBtn = document.getElementById('calculate-btn');
+    loadingDiv.style.display = 'block';
+    calculateBtn.disabled = true;
 
     try {
         const response = await fetch('http://127.0.0.1:5000/calculate', {
@@ -80,9 +118,14 @@ async function calculate() {
     } catch (error) {
         console.error('Error:', error);
         alert('An error occurred: ' + error.message);
+    } finally {
+        // Hide loading indicator
+        loadingDiv.style.display = 'none';
+        calculateBtn.disabled = false;
     }
 }
 
+// Display the result
 function displayResult(result) {
     const resultTable = document.getElementById('result-table');
     resultTable.innerHTML = '';
@@ -106,3 +149,9 @@ function displayResult(result) {
         resultTable.appendChild(tr);
     });
 }
+
+// Initialize the table with pre-filled data
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('initial-data-points').value = 4;
+    createDataTable();
+});

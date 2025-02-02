@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bayesian Optimization</title>
+    <title>GPR Optimization</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Bayesian Optimization</h1>
+    <h1>GPR Optimization</h1>
     <div id="input-section">
         <label for="initial-data-points">Number of Initial Data Points:</label>
         <input type="number" id="initial-data-points" placeholder="Enter number of points">
@@ -16,9 +16,10 @@
         <label for="batch-size">Batch Size:</label>
         <input type="number" id="batch-size" placeholder="Enter batch size">
         <button onclick="calculate()" style="display:none;" id="calculate-btn">Calculate</button>
+        <div id="loading" style="display:none;">Loading...</div>
     </div>
     <div id="result-section">
-        <h2>Acquisition function results</h2>
+        <h2>Optimization Results</h2>
         <table id="result-table">
             <!-- Results will be displayed here -->
         </table>

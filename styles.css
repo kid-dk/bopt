@@ -26,3 +26,9 @@ th {
 button {
     margin-top: 10px;
 }
+
+#loading {
+    margin-top: 10px;
+    font-weight: bold;
+    color: blue;
+}
