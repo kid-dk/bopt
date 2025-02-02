@@ -15,8 +15,15 @@ tkwargs = {
 }
 SMOKE_TEST = os.environ.get("SMOKE_TEST")
 
-@app.route('/calculate', methods=['POST'])
+@app.route('/calculate', methods=['POST', 'OPTIONS'])
 def calculate():
+    if request.method == 'OPTIONS':
+        # Handle preflight request
+        response = jsonify({'status': 'success'})
+        response.headers.add('Access-Control-Allow-Origin', 'https://kid-dk.github.io')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
+        return response
     data = request.json
     initial_data = data['initial_data']
     batch_size = data['batch_size']

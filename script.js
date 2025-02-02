@@ -83,9 +83,6 @@ async function calculate() {
         initialData.push(row);
     }
 
-    // Save the data to localStorage
-    saveData(initialData);
-
     // Show loading indicator
     const loadingDiv = document.getElementById('loading');
     const calculateBtn = document.getElementById('calculate-btn');
